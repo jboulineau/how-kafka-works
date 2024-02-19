@@ -1,0 +1,2 @@
+wheel
+confluent-kafka[avro]>=1.9.2
