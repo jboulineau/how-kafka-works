@@ -3,17 +3,18 @@ title: How Kafka Works
 author: Jon Boulineau
 ...
 
-# Introduction to Kafka
+# How Kafka Works
 
 ## About Me
 
 ### Jon Boulineau
 
-- Emerging Security Technologies Lead  
+- Emerging Security Technologies Lead, Citizens  
 
 - **Email**: jboulineau@pm.me
 - **Blog**: jonboulineau.me
 - **Twitter**: @jboulineau
+- **GitHub**: jboulineau
 
 ## The Problem
 
@@ -74,7 +75,7 @@ author: Jon Boulineau
                                         │                      │                                                            
                                         │  Database            │                                        ┌───────────────┐   
                                         │                      │                                        │               │   
-                                        │                      │                           ┌────────────► Application   │   
+                                        │                      │                           ┌────────────► Applications  │   
                                         └───────────▲──────────┘                           │            │               │   
                                                     │                                      │            └───────────────┘   
                                                     │                         ┌────────────┴───────┐                        
@@ -96,24 +97,32 @@ author: Jon Boulineau
 
 ## What is Kafka?
 
-Kafka is an **_immutable transaction log_** created by engineers at LinkedIn and introduced to the Apache Software Foundation incubator in 2011.
+Kafka is a **_distributed immutable transaction log_** created by engineers at LinkedIn and introduced to the Apache Software Foundation incubator in 2011.
 
 - **Distributed**: Kafka is 'infinitely' horizontally scalable.
 - **Immutable**: Once data are stored, they cannot be modified.
 - **Transaction Log**: The persistence data structure is an ordered series of state changes.
 
-### **__Kafka is not a queue manager__**
-
-[The Log: What Every Software Engineer Should know About Real-Time Data's Unifying Abstraction](https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying)
+`**Kafka is not a queue manager**`
 
 ## Brokers
 
 - A 'Broker' is an instance of the Kafka service.
 - Multiple brokers form a cluster - scales "infinitely"
-- Each partition has a broker leader (KRAFT)
-- Best practice is to use 3 replicas for each partition.
+
+```text
+┌───────────────────────────────┐   ┌───────────────────────────────┐   ┌───────────────────────────────┐
+│ Broker 0                      │   │ Broker 1                      │   │ Broker 2                      │
+│                               │   │                               │   │                               │
+└───────────────────────────────┘   └───────────────────────────────┘   └───────────────────────────────┘
+```
+
+## Topics
 
 This diagram represents a three broker cluster hosting a single topic.
+
+- A **topic** is a partitioned immutable transaction log.
+- Each partition has a broker leader (indicated by +)
 
 ``` text
 ┌───────────────────────────────┐   ┌───────────────────────────────┐   ┌───────────────────────────────┐
@@ -142,14 +151,10 @@ This diagram represents a three broker cluster hosting a single topic.
 └───────────────────────────────┘   └───────────────────────────────┘   └───────────────────────────────┘
 ```
 
-## Topics, Partitions, and Records
+## Records
 
-- A **topic** is a partitioned immutable transaction log.
-- A **partition** is an ordered segment of the transaction log.
 - A **record** is a key value pair persisted to a partition as a Java byte array.
   - **_NOTE_**: By using **Schema Registry**, records are forced to follow a contract defined in JSON, Avro, or Protbuf format.
-- An **offset** is an ordinal value assigned to each record to identify it on a partition.
-  - A record is identified by its topic, partition id, and offset.
 
 ``` text
                        ┌───────────────────────────────────────────────────────────────────────────┐
@@ -177,6 +182,17 @@ This diagram represents a three broker cluster hosting a single topic.
                        │   Partition 3                                                             │
                        └───────────────────────────────────────────────────────────────────────────┘
 ```
+
+## Concept Review
+
+- A 'Broker' is an instance of the Kafka service.
+- Multiple brokers form a cluster - scales "infinitely"
+- A **topic** is a partitioned immutable transaction log.
+- A **partition** is an ordered segment of the transaction log.
+- A **record** is a key value pair persisted to a partition as a Java byte array.
+  - **_NOTE_**: By using **Schema Registry**, records are forced to follow a contract defined in JSON, Avro, or Protbuf format.
+- An **offset** is an ordinal value assigned to each record to identify it on a partition.
+  - A record is identified by its topic, partition id, and offset.
 
 ## Producers and Consumers
 
@@ -209,8 +225,8 @@ This diagram represents a three broker cluster hosting a single topic.
                                       │         Producer          │
                                       └────────────┬──────────────┘
                                                    ▼
-               ┌──────────────────────────---------------------──────────────────────────┐
-               ▼                                   ▼                                     ▼
+               ┌──────────────────────────----------
+               ▼                                   
 ┌───────────────────────────────┐   ┌───────────────────────────────┐   ┌───────────────────────────────┐
 │ Broker 0                      │   │ Broker 1                      │   │ Broker 2                      │
 │                               │   │                               │   │                               │
@@ -241,3 +257,32 @@ This diagram represents a three broker cluster hosting a single topic.
            └────────────────────────────────────────────────────────────────────────────────┘
 
 ```
+
+## DEMO TIME
+
+``` text
+
+ (             *        )           (       *           
+ )\ )        (  `    ( /(     *   ) )\ )  (  `          
+(()/(   (    )\))(   )\())  ` )  /((()/(  )\))(   (     
+ /(_))  )\  ((_)()\ ((_)\    ( )(_))/(_))((_)()\  )\    
+(_))_  ((_) (_()((_)  ((_)  (_(_())(_))  (_()((_)((_)   
+ |   \ | __||  \/  | / _ \  |_   _||_ _| |  \/  || __|  
+ | |) || _| | |\/| || (_) |   | |   | |  | |\/| || _|   
+ |___/ |___||_|  |_| \___/    |_|  |___| |_|  |_||___|  
+                                                        
+
+```
+
+## Closing thoughts
+
+- Kafka is NOT A QUEUE
+- Consider your topic design up front
+  - Naming conventions are essential at scale
+  - Adding partitions is easy, but can break your consumers
+- Consider your consuming patterns carefully
+  - At-least-once vs. at-most-once vs. exactly-once
+  - Topic replay consumer settings
+- Schemas (and schema registry) may seem like overhead...use them anyway
+
+GitHub Repo: [https://github.com/jboulineau/how-kafka-works](https://github.com/jboulineau/how-kafka-works)

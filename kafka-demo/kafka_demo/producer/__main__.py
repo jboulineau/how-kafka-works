@@ -28,7 +28,7 @@ def produce():
                                            to_dict=Count.count_to_dict)
 
     producer_config: dict[str, object] = {
-        "bootstrap.servers": "localhost:9092",
+        "bootstrap.servers": "localhost:9092", 
         "message.timeout.ms": "0", # milliseconds
         "key.serializer": name_avro_serializer,
         "value.serializer": count_avro_serializer,
@@ -64,7 +64,7 @@ def produce():
             i += 1
 
         except KeyboardInterrupt:
-            # Make sure remaining records are published and receive events
+            # Make sure remaining callbacks fire
             producer.flush()
             break
         except (ConnectionError, ConnectionRefusedError) as e:
