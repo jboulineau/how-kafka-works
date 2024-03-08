@@ -18,11 +18,10 @@ docker-compose up
 docker exec -it broker /bin/bash
 
 # Inspect a consumer group
-    kafka-consumer-groups --bootstrap-server localhost:9092 --group example_consumer --describe
+kafka-consumer-groups --bootstrap-server localhost:9092 --group example_consumer --describe
 
 # Inspect a topic
 kafka-topics --bootstrap-server localhost:9092 --topic TestTopic --describe
-
 ```
 
 ## More Resources
